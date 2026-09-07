@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>YakiStock</title>
+<meta name="description" content="Gestion de stock et des commandes pour boutiques en ligne et petites entreprises.">
+<meta name="theme-color" content="#0F0F0F">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Manrope:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- ============ HOME ============ -->
+<section class="home-shell" id="homeShell">
+  <header class="home-header">
+    <a class="home-brand" href="#" aria-label="Retour à l'accueil">
+      <img class="auth-logo" src="icons/icon-192.png" alt="YakiStock logo">
+      <span>YakiStock</span>
+    </a>
+    <nav class="home-nav" aria-label="Navigation principale">
+      <a href="#fonctionnalites">Fonctionnalités</a>
+      <a href="#historique">Historique</a>
+      <a href="#a-propos">À propos</a>
+      <a href="#tarifs">Tarifs</a>
+      <a href="#faq">FAQ</a>
+      <a href="#documentation">Documentation</a>
+      <a href="#regles">Règles</a>
+      <a href="#methode">Notre méthode</a>
+      <button class="btn btn-outline btn-sm js-show-login" type="button">Connexion</button>
+      <button class="btn btn-primary btn-sm js-show-register" type="button">Inscription</button>
+    </nav>
+  </header>
+
+  <main>
+    <section class="home-hero">
+      <div class="home-hero-copy">
+        <span class="auth-kicker">VOTRE STOCK, PLUS SIMPLE</span>
+        <h1>Pilotez votre inventaire avec <em>clarté.</em></h1>
+        <p>YakiStock vous aide à suivre votre catalogue, vos commandes et les réapprovisionnements au bon moment.</p>
+        <div class="home-actions">
+          <button class="btn btn-primary js-show-register" type="button">Commencer gratuitement</button>
+          <button class="home-text-btn js-show-login" type="button">J'ai déjà un compte <span aria-hidden="true">→</span></button>
+        </div>
+        <p class="home-note">Installation rapide · Fonctionne même hors connexion</p>
+      </div>
+      <div class="home-visual" aria-label="Gestion des stocks et préparation des commandes">
+        <div class="image-placeholder image-frame">
+          <img src="icons/stock.jpg" alt="Cartons et colis prêts pour l'expédition">
+        </div>
+        <div class="visual-caption"><span class="caption-line"></span> Une vue nette, une décision rapide</div>
+      </div>
+    </section>
+
+    <section class="home-section" id="fonctionnalites">
+      <div class="section-heading"><span class="auth-kicker">TOUT AU MÊME ENDROIT</span><h2>Les bons signaux, au bon moment.</h2></div>
+      <div class="feature-grid">
+        <article class="feature-item"><span class="feature-number">01</span><h3>Visualisez votre stock</h3><p>Retrouvez vos références, leur niveau et leur valeur depuis un tableau de bord lisible.</p></article>
+        <article class="feature-item"><span class="feature-number">02</span><h3>Anticipez les ruptures</h3><p>Repérez les seuils bas et recevez des recommandations pour réapprovisionner sans attendre.</p></article>
+        <article class="feature-item"><span class="feature-number">03</span><h3>Suivez chaque mouvement</h3><p>Gardez une trace simple des entrées et sorties pour comprendre votre activité.</p></article>
+      </div>
+    </section>
+
+    <section class="home-method" id="methode">
+      <div class="method-image image-placeholder image-frame"><img src="icons/laboutique.jpg" alt="Rayons colorés d'une boutique de vêtements"></div>
+      <div class="method-copy"><span class="auth-kicker">UNE MÉTHODE QUI S'ADAPTE</span><h2>Commencez petit. Décidez mieux.</h2><p>Que vous vendiez en ligne ou gériez une petite entreprise, YakiStock vous donne une base fiable pour avancer sans feuille de calcul dispersée.</p><button class="btn btn-primary js-show-register" type="button">Créer mon espace</button></div>
+    </section>
+
+    <section class="public-page" id="historique">
+      <div class="public-page-heading"><span class="auth-kicker">HISTORIQUE</span><h2>Chaque mouvement laisse une trace claire.</h2><p>YakiStock conserve vos entrées et vos sorties pour vous aider à comprendre l'évolution de votre stock et à retrouver rapidement une opération.</p></div>
+      <div class="history-preview">
+        <div class="history-preview-head"><span>Date</span><span>Opération</span><span>Quantité</span></div>
+        <div class="history-preview-row"><span>12 juin 2026</span><strong>Réception fournisseur</strong><b class="is-in">+ 120</b></div>
+        <div class="history-preview-row"><span>11 juin 2026</span><strong>Commande en ligne</strong><b class="is-out">- 18</b></div>
+        <div class="history-preview-row"><span>09 juin 2026</span><strong>Réapprovisionnement</strong><b class="is-in">+ 42</b></div>
+      </div>
+    </section>
+
+    <section class="public-page about-page" id="a-propos">
+      <div class="about-image image-placeholder image-frame"><img src="icons/lequipe.jpg" alt="Équipe préparant des colis pour les clients"></div>
+      <div class="public-page-heading"><span class="auth-kicker">À PROPOS DE YAKISTOCK</span><h2>Un outil pensé pour les réalités du terrain.</h2><p>YakiStock est conçu pour les boutiques en ligne, petites entreprises, ateliers et équipes qui veulent une gestion de stock compréhensible, rapide et accessible.</p><p>Notre objectif est simple : réduire les oublis, faciliter le suivi quotidien et vous laisser plus de temps pour vos clients.</p></div>
+    </section>
+
+    <section class="public-page pricing-page" id="tarifs">
+      <div class="public-page-heading"><span class="auth-kicker">TARIFS</span><h2>Une version gratuite pour commencer.</h2><p>YakiStock est actuellement disponible gratuitement. Vous pouvez créer votre espace et utiliser les fonctions essentielles sans abonnement.</p></div>
+      <div class="pricing-card">
+        <div class="pricing-card-top"><span class="pricing-label">VERSION ACTUELLE</span><span class="pricing-price">0 <small>FCFA</small></span><h3>YakiStock Gratuit</h3><p>Pour démarrer simplement le suivi de votre inventaire.</p></div>
+        <ul class="pricing-list"><li>Gestion des produits et catégories</li><li>Suivi des entrées et sorties</li><li>Alertes de seuil minimum</li><li>Historique des mouvements</li><li>Prédictions de réapprovisionnement</li><li>Utilisation hors connexion</li></ul>
+        <button class="btn btn-primary btn-block js-show-register" type="button">Créer mon espace gratuitement</button>
+      </div>
+    </section>
+
+    <section class="public-page faq-page" id="faq">
+      <div class="public-page-heading"><span class="auth-kicker">FAQ</span><h2>Les réponses aux premières questions.</h2><p>Une base de référence pour comprendre le fonctionnement de YakiStock avant de créer votre espace.</p></div>
+      <div class="faq-list">
+        <details open><summary>YakiStock est-il gratuit ?</summary><p>Oui. La version actuelle est gratuite et propose les fonctions essentielles de gestion de stock, de commandes et de suivi des ventes.</p></details>
+        <details><summary>Les données sont-elles disponibles hors connexion ?</summary><p>Oui, les données sont conservées localement sur l'appareil. La synchronisation entre plusieurs appareils nécessitera le futur backend.</p></details>
+        <details><summary>Quels sont les rôles disponibles ?</summary><p>L'administrateur général contrôle les comptes et les espaces de vente. Le gestionnaire pilote le catalogue et consulte le journal. L'opérateur des ventes traite uniquement les commandes.</p></details>
+        <details><summary>Comment fonctionne l'espace de vente ?</summary><p>L'administrateur crée un espace de vente, puis affecte un opérateur. Celui-ci sélectionne les produits, choisit le moyen de paiement et valide la commande.</p></details>
+        <details><summary>Les prédictions sont-elles déjà un modèle ML ?</summary><p>La version actuelle fournit une estimation locale basée sur l'historique des sorties. Un vrai modèle ML pourra être branché au backend.</p></details>
+        <details><summary>Peut-on utiliser YakiStock sur plusieurs appareils ?</summary><p>Pas encore de manière synchronisée. Cette évolution dépendra d'une base de données et d'une authentification serveur.</p></details>
+      </div>
+    </section>
+
+    <section class="public-page documentation-page" id="documentation">
+      <div class="public-page-heading"><span class="auth-kicker">DOCUMENTATION</span><h2>Un parcours simple pour chaque équipe.</h2><p>Cette documentation décrit le fonctionnement prévu de la version actuelle et prépare les prochaines briques techniques.</p></div>
+      <div class="documentation-list">
+        <article><span class="feature-number">01</span><h3>Administrateur</h3><p>Crée les gestionnaires et opérateurs, crée les espaces de vente, affecte les opérateurs et consulte les indicateurs financiers.</p></article>
+        <article><span class="feature-number">02</span><h3>Gestionnaire</h3><p>Ajoute ou modifie les produits, renseigne les seuils, enregistre les mouvements et consulte le journal des ventes.</p></article>
+        <article><span class="feature-number">03</span><h3>Opérateur des ventes</h3><p>Ouvre son espace affecté, ajoute les produits au panier, choisit Espèces ou Mobile Money et valide la commande.</p></article>
+        <article><span class="feature-number">04</span><h3>Backend à prévoir</h3><p>Le serveur devra gérer les sessions, les droits côté API, les données par entreprise, la synchronisation et les sauvegardes.</p></article>
+      </div>
+    </section>
+
+    <section class="public-page rules-page" id="regles">
+      <div class="public-page-heading"><span class="auth-kicker">RÈGLES DE L'APPLICATION</span><h2>Des responsabilités clairement séparées.</h2><p>Ces règles sont la référence fonctionnelle à conserver lors de la conception du backend, du modèle ML et du bot NLP.</p></div>
+      <ul class="rules-list"><li><strong>Accès</strong><span>Chaque utilisateur ne voit que les écrans correspondant à son rôle.</span></li><li><strong>Stock</strong><span>Une sortie ne peut pas dépasser la quantité disponible.</span></li><li><strong>Commandes</strong><span>Une commande nécessite un espace de vente actif affecté à l'opérateur.</span></li><li><strong>Traçabilité</strong><span>Chaque commande doit conserver sa date, son espace, son opérateur, son paiement et son détail.</span></li><li><strong>Confidentialité</strong><span>Les coûts d'achat, marges et indicateurs globaux sont réservés à l'administrateur.</span></li><li><strong>Fiabilité</strong><span>Le backend devra refaire toutes les vérifications côté serveur, même si l'interface les applique déjà.</span></li></ul>
+    </section>
+  </main>
+  <footer class="home-footer"><span>YakiStock</span><span>Le contrôle d'inventaire, sans friction.</span></footer>
+</section>
+
+<!-- ============ AUTHENTICATION ============ -->
+<section class="auth-shell" id="authShell" hidden>
+  <div class="auth-brand">
+    <img class="auth-logo" src="icons/icon-192.png" alt="YakiStock logo">
+    <span>YakiStock</span>
+  </div>
+  <div class="auth-layout">
+    <div class="auth-intro">
+      <span class="auth-kicker">GESTION D'INVENTAIRE</span>
+      <h1>Gardez une longueur d'avance sur votre stock.</h1>
+      <p>Centralisez vos références, surveillez les seuils et prenez de meilleures décisions, même hors connexion.</p>
+      <div class="auth-feature-list">
+        <span><strong>01</strong> Vue claire de vos stocks</span>
+        <span><strong>02</strong> Alertes de rupture en un coup d'œil</span>
+        <span><strong>03</strong> Données disponibles localement</span>
+      </div>
+    </div>
+    <div class="auth-card">
+      <div class="auth-tabs" role="tablist" aria-label="Authentification">
+        <button class="auth-tab is-active" type="button" data-auth-view="login" role="tab" aria-selected="true">Connexion</button>
+        <button class="auth-tab" type="button" data-auth-view="register" role="tab" aria-selected="false">Inscription</button>
+      </div>
+      <div class="auth-heading">
+        <h2 id="authTitle">Bon retour.</h2>
+        <p id="authSubtitle">Connectez-vous pour retrouver votre espace de travail.</p>
+      </div>
+      <form class="auth-form" id="loginForm">
+        <div class="form-row">
+          <label for="loginEmail">Adresse e-mail</label>
+          <input type="email" id="loginEmail" autocomplete="email" placeholder="vous@entreprise.com" required>
+        </div>
+        <div class="form-row">
+          <label for="loginPassword">Mot de passe</label>
+          <input type="password" id="loginPassword" autocomplete="current-password" placeholder="Votre mot de passe" required>
+        </div>
+        <button type="submit" class="btn btn-primary btn-block">Accéder à mon espace</button>
+        <p class="auth-hint">Vos données restent enregistrées sur cet appareil.</p>
+      </form>
+      <form class="auth-form" id="registerForm" hidden>
+        <div class="form-row">
+          <label for="registerName">Nom complet</label>
+          <input type="text" id="registerName" autocomplete="name" placeholder="Votre nom" required>
+        </div>
+        <div class="form-row">
+          <label for="registerEmail">Adresse e-mail</label>
+          <input type="email" id="registerEmail" autocomplete="email" placeholder="vous@entreprise.com" required>
+        </div>
+        <div class="form-row">
+          <label for="registerPassword">Mot de passe</label>
+          <input type="password" id="registerPassword" autocomplete="new-password" minlength="6" placeholder="6 caractères minimum" required>
+        </div>
+        <button type="submit" class="btn btn-primary btn-block">Créer mon espace</button>
+        <p class="auth-hint">La création de compte est locale à cette version.</p>
+      </form>
+    </div>
+  </div>
+</section>
+
+<div id="appShell" hidden>
+
+<!-- ============ HEADER ============ -->
+<header class="app-header">
+  <div class="header-left">
+    <img class="logo-mark logo-mark-icon" src="icons/icon-192.png" alt="YakiStock logo" aria-label="YakiStock logo">
+    <div class="brand-block">
+      <h1 class="brand-name">YakiStock</h1>
+      <span class="brand-sub">Contrôle d'inventaire</span>
+    </div>
+  </div>
+
+  <div class="header-right">
+    <span class="net-status" id="netStatus" data-state="online">
+      <svg class="net-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 8.5a16 16 0 0120 0M5.5 12a11 11 0 0113 0M9 15.5a6 6 0 016 0" stroke-linecap="round"/><circle cx="12" cy="19" r="1.1" fill="currentColor" stroke="none"/></svg>
+      <span id="netStatusLabel">En ligne</span>
+    </span>
+    <button class="btn btn-outline btn-sm" id="installBtn" hidden>
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v13m0 0l-4-4m4 4l4-4M4 19h16" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      Installer l'application
+    </button>
+    <button class="btn btn-outline btn-sm" id="logoutBtn" type="button">Se déconnecter</button>
+    <button class="header-icon-btn" id="profileBtn" type="button" aria-label="Modifier mon profil" title="Modifier mon profil">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="3.5"/><path d="M5 20c.7-3.2 3.1-5 7-5s6.3 1.8 7 5" stroke-linecap="round"/></svg>
+    </button>
+    <button class="header-icon-btn" id="settingsBtn" type="button" aria-label="Ouvrir les paramètres" title="Paramètres">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 8.5a3.5 3.5 0 100 7 3.5 3.5 0 000-7z"/><path d="M19.4 15a1.7 1.7 0 00.3 1.9l.1.1-1.8 1.8-.1-.1a1.7 1.7 0 00-1.9-.3 1.7 1.7 0 00-1 1.6v.2h-2.6V20a1.7 1.7 0 00-1-1.6 1.7 1.7 0 00-1.9.3l-.1.1-1.8-1.8.1-.1a1.7 1.7 0 00.3-1.9 1.7 1.7 0 00-1.6-1H6.2v-2.6H6a1.7 1.7 0 001.6-1 1.7 1.7 0 00-.3-1.9l-.1-.1L9 6.6l.1.1a1.7 1.7 0 001.9.3 1.7 1.7 0 001-1.6v-.2h2.6v.2a1.7 1.7 0 001 1.6 1.7 1.7 0 001.9-.3l.1-.1 1.8 1.8-.1.1a1.7 1.7 0 00-.3 1.9 1.7 1.7 0 001.6 1h.2V14h-.2a1.7 1.7 0 00-1.2 1z" stroke-linejoin="round"/></svg>
+    </button>
+    <span class="role-badge" id="roleBadge"></span>
+  </div>
+</header>
+
+<!-- ============ NAV TABS ============ -->
+<nav class="tab-bar" role="tablist" aria-label="Sections de YakiStock">
+  <button class="tab-btn is-active" data-tab="overview" role="tab" aria-selected="true">
+    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>
+    Aperçu général
+  </button>
+  <button class="tab-btn" data-tab="stock" role="tab" aria-selected="false">
+    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 7l9-4 9 4-9 4-9-4z"/><path d="M3 7v10l9 4 9-4V7"/><path d="M12 11v10"/></svg>
+    Stock &amp; Produits
+  </button>
+  <button class="tab-btn" data-tab="movements" role="tab" aria-selected="false">
+    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M7 7h11m0 0l-4-4m4 4l-4 4"/><path d="M17 17H6m0 0l4 4m-4-4l4-4"/></svg>
+    Entrées / Sorties
+  </button>
+  <button class="tab-btn" data-tab="predictions" role="tab" aria-selected="false">
+    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 17l5-6 4 3 5-8 4 5"/></svg>
+    Prédictions ML
+  </button>
+  <button class="tab-btn admin-only" data-tab="admin" role="tab" aria-selected="false" hidden>
+    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 5h16v14H4z"/><path d="M8 9h8M8 13h5" stroke-linecap="round"/></svg>
+    Administration
+  </button>
+</nav>
+
+<main class="app-main">
+
+  <!-- ============ ROLE: CASHIER ============ -->
+  <section class="role-panel cashier-panel" id="cashierPanel" hidden>
+    <div class="panel-head panel-head-row">
+      <div><span class="auth-kicker">COMMANDES 1-TAP</span><h2 id="cashierRegisterTitle">Espace de vente</h2><p class="panel-sub">Traitez rapidement les commandes de votre boutique.</p></div>
+      <div class="cashier-day-stat"><strong id="cashierSalesCount">0</strong><span>ventes aujourd'hui</span></div>
+    </div>
+    <div class="cashier-layout">
+      <div class="cashier-products" id="cashierProducts"></div>
+      <aside class="card cart-panel">
+        <div class="block-head"><h3>Panier en cours</h3><span class="chip" id="cartCount">0 article</span></div>
+        <ul class="cart-list" id="cartList"></ul>
+        <div class="cart-total"><span>Total</span><strong id="cartTotal">0 FCFA</strong></div>
+        <div class="payment-options" role="group" aria-label="Mode de paiement">
+          <button type="button" class="payment-btn is-active" data-payment="cash">Espèces</button>
+          <button type="button" class="payment-btn" data-payment="mobile">Mobile Money</button>
+        </div>
+        <button class="btn btn-primary btn-block" id="checkoutBtn" type="button" disabled>Valider la commande</button>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ============ ROLE: ADMINISTRATION ============ -->
+  <section class="role-panel tab-panel admin-panel" id="panel-admin" hidden>
+    <div class="panel-head"><span class="auth-kicker">CONTRÔLE CENTRAL</span><h2>Administration</h2><p class="panel-sub">Gérez les utilisateurs, les espaces de vente et les performances commerciales.</p></div>
+    <div class="stat-grid admin-metrics" id="adminMetrics"></div>
+    <div class="admin-grid">
+      <div class="card admin-card" id="adminUserCard"><div class="block-head"><h3>Créer un utilisateur</h3></div><form id="adminUserForm"><div class="form-row"><label for="adminUserName">Nom complet</label><input id="adminUserName" required></div><div class="form-row"><label for="adminUserEmail">Adresse e-mail</label><input type="email" id="adminUserEmail" required></div><div class="form-row"><label for="adminUserPassword">Mot de passe initial</label><input type="password" id="adminUserPassword" minlength="6" required></div><div class="form-row"><label for="adminUserRole">Rôle</label><select id="adminUserRole"><option value="manager">Gestionnaire de stock</option><option value="cashier">Opérateur des ventes</option></select></div><button class="btn btn-primary btn-block" id="adminUserSubmit" type="submit">Créer le compte</button></form></div>
+      <div class="card admin-card" id="cashRegisterCard"><div class="block-head"><h3>Espaces de vente</h3><span class="chip" id="registerCount">0</span></div><form id="cashRegisterForm"><div class="form-row"><label for="registerName">Nom de l'espace</label><input id="registerName" placeholder="Boutique en ligne" required></div><button class="btn btn-outline btn-block" type="submit">Créer un espace</button></form><ul class="admin-list" id="registerList"></ul></div>
+    </div>
+    <div class="card admin-card admin-wide"><div class="block-head"><h3>Utilisateurs et affectations</h3><span class="chip" id="userCount">0</span></div><div class="table-wrap"><table class="data-table admin-table"><thead><tr><th>Utilisateur</th><th>Rôle</th><th>Espace de vente</th><th>Action</th></tr></thead><tbody id="adminUserList"></tbody></table></div></div>
+    <div class="card admin-card admin-wide"><div class="block-head"><h3>Journal des commandes</h3><div class="admin-filters"><select id="saleRegisterFilter"><option value="all">Tous les espaces</option></select><select id="saleCashierFilter"><option value="all">Tous les opérateurs</option></select></div></div><ul class="sales-log" id="salesLog"></ul></div>
+  </section>
+
+  <!-- ============ TAB: OVERVIEW ============ -->
+  <section class="tab-panel is-active" id="panel-overview">
+    <div class="panel-head">
+      <h2>Aperçu général</h2>
+      <p class="panel-sub">État global de l'inventaire en temps réel.</p>
+    </div>
+
+    <div class="stat-grid" id="statGrid"></div>
+
+    <div class="split-grid">
+      <div class="card block-card">
+        <div class="block-head">
+          <h3>Alertes de rupture</h3>
+          <span class="chip chip-danger" id="alertCount">0</span>
+        </div>
+        <ul class="alert-list" id="alertList"></ul>
+      </div>
+
+      <div class="card block-card">
+        <div class="block-head">
+          <h3>Mouvements récents</h3>
+        </div>
+        <ul class="movement-list" id="recentMovements"></ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ TAB: STOCK ============ -->
+  <section class="tab-panel" id="panel-stock">
+    <div class="panel-head panel-head-row">
+      <div>
+        <h2>Stock &amp; Produits</h2>
+        <p class="panel-sub">Suivi visuel du niveau de chaque référence de votre catalogue.</p>
+      </div>
+      <button class="btn btn-primary btn-add" id="addProductBtn">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 5v14M5 12h14" stroke-linecap="round"/></svg>
+        Ajouter un produit
+      </button>
+    </div>
+
+    <div class="toolbar">
+      <div class="search-field">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3" stroke-linecap="round"/></svg>
+        <input type="search" id="searchInput" placeholder="Rechercher un produit…">
+      </div>
+      <select id="categoryFilter" class="select-field">
+        <option value="all">Toutes les catégories</option>
+      </select>
+      <button class="btn btn-outline" id="viewToggleBtn">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M3 12h18M3 18h18" stroke-linecap="round"/></svg>
+        Basculer en vue Tableur
+      </button>
+    </div>
+
+    <div class="product-grid" id="productGrid"></div>
+
+    <div class="table-wrap" id="tableWrap" hidden>
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Produit</th>
+            <th>Catégorie</th>
+            <th>Stock</th>
+            <th>Seuil min.</th>
+            <th>Statut</th>
+            <th>Prix unitaire</th>
+            <th>Valeur stock</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="tableBody"></tbody>
+      </table>
+    </div>
+
+    <div class="empty-state" id="stockEmptyState" hidden>
+      <p class="empty-title">Aucun produit pour le moment</p>
+      <p class="empty-sub">Ajoutez votre première référence pour commencer le suivi du stock.</p>
+      <button class="btn btn-primary btn-add" id="emptyStateAddBtn">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 5v14M5 12h14" stroke-linecap="round"/></svg>
+        Ajouter un produit
+      </button>
+    </div>
+  </section>
+
+  <!-- ============ TAB: MOVEMENTS ============ -->
+  <section class="tab-panel" id="panel-movements">
+    <div class="panel-head">
+      <h2>Entrées / Sorties</h2>
+      <p class="panel-sub">Enregistre une réception ou une sortie de stock.</p>
+    </div>
+
+    <div class="movement-layout">
+      <form class="card movement-form" id="movementForm">
+        <div class="form-row">
+          <label for="movProduct">Produit</label>
+          <select id="movProduct" required></select>
+        </div>
+
+        <div class="form-row">
+          <span class="form-label">Type de mouvement</span>
+          <div class="segmented" role="radiogroup" aria-label="Type de mouvement">
+            <button type="button" class="segmented-btn is-active" data-type="in">Entrée</button>
+            <button type="button" class="segmented-btn" data-type="out">Sortie</button>
+          </div>
+        </div>
+
+        <div class="form-row-split">
+          <div class="form-row">
+            <label for="movQty">Quantité</label>
+            <input type="number" id="movQty" min="1" step="1" required placeholder="0">
+          </div>
+          <div class="form-row">
+            <label for="movDate">Date</label>
+            <input type="date" id="movDate" required>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <label for="movNote">Motif / référence (optionnel)</label>
+          <input type="text" id="movNote" placeholder="Ex : Réception fournisseur, commande #1042…">
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-block">Enregistrer le mouvement</button>
+      </form>
+
+      <div class="card block-card">
+        <div class="block-head">
+          <h3>Historique des mouvements</h3>
+        </div>
+        <ul class="movement-list movement-list-full" id="fullMovementList"></ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ TAB: PREDICTIONS ============ -->
+  <section class="tab-panel" id="panel-predictions">
+    <div class="panel-head">
+      <h2>Prédictions ML</h2>
+      <p class="panel-sub">Analyses de tendance et recommandations de réapprovisionnement.</p>
+    </div>
+
+    <div class="prediction-grid" id="predictionGrid"></div>
+  </section>
+
+</main>
+
+<!-- ============ MODAL: ADD PRODUCT ============ -->
+<div class="modal-overlay" id="productModalOverlay" hidden>
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="productModalTitle">
+    <div class="modal-head">
+      <h3 id="productModalTitle">Nouveau produit</h3>
+      <button class="icon-btn" id="closeProductModal" aria-label="Fermer">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6L6 18" stroke-linecap="round"/></svg>
+      </button>
+    </div>
+    <form id="productForm">
+      <div class="form-row">
+        <label for="pName">Nom du produit</label>
+        <input type="text" id="pName" required placeholder="Ex : Riz local 25kg">
+      </div>
+        <div class="form-row">
+          <label for="pPurchasePrice">Prix d'achat unitaire (FCFA)</label>
+          <input type="number" id="pPurchasePrice" min="0" required placeholder="0">
+        </div>
+      <div class="form-row-split">
+        <div class="form-row">
+          <label for="pCategory">Catégorie</label>
+          <input type="text" id="pCategory" required placeholder="Ex : Alimentation" list="categoryList">
+          <datalist id="categoryList"></datalist>
+        </div>
+        <div class="form-row">
+          <label for="pPrice">Prix unitaire (FCFA)</label>
+          <input type="number" id="pPrice" min="0" required placeholder="0">
+        </div>
+      </div>
+      <div class="form-row-split">
+        <div class="form-row">
+          <label for="pStock">Stock actuel</label>
+          <input type="number" id="pStock" min="0" required placeholder="0">
+        </div>
+        <div class="form-row">
+          <label for="pMin">Seuil minimum</label>
+          <input type="number" id="pMin" min="0" required placeholder="0">
+        </div>
+      </div>
+      <div class="form-row-split">
+        <div class="form-row">
+          <label for="pMax">Capacité max.</label>
+          <input type="number" id="pMax" min="1" required placeholder="0">
+        </div>
+        <div class="form-row">
+          <label for="pUnit">Unité</label>
+          <input type="text" id="pUnit" required placeholder="Ex : sacs, unités, cartons">
+        </div>
+      </div>
+      <button type="submit" class="btn btn-primary btn-block">Ajouter au stock</button>
+    </form>
+  </div>
+</div>
+
+<!-- ============ MODALS: PROFILE AND SETTINGS ============ -->
+<div class="modal-overlay" id="profileModalOverlay" hidden>
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="profileModalTitle">
+    <div class="modal-head"><h3 id="profileModalTitle">Modifier mon profil</h3><button class="icon-btn" id="closeProfileModal" type="button" aria-label="Fermer"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6L6 18" stroke-linecap="round"/></svg></button></div>
+    <form id="profileForm">
+      <div class="profile-summary"><div class="profile-avatar" id="profileAvatar">Y</div><div><strong id="profileSummaryName">Votre profil</strong><span>Compte YakiStock</span></div></div>
+      <div class="form-row"><label for="profileName">Nom complet</label><input type="text" id="profileName" required></div>
+      <div class="form-row"><label for="profileEmail">Adresse e-mail</label><input type="email" id="profileEmail" required></div>
+      <div class="form-row"><label for="profilePassword">Nouveau mot de passe</label><input type="password" id="profilePassword" minlength="6" placeholder="Laisser vide pour conserver l'actuel"></div>
+      <button type="submit" class="btn btn-primary btn-block">Enregistrer les modifications</button>
+    </form>
+  </div>
+</div>
+
+<div class="modal-overlay" id="settingsModalOverlay" hidden>
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="settingsModalTitle">
+    <div class="modal-head"><h3 id="settingsModalTitle">Paramètres</h3><button class="icon-btn" id="closeSettingsModal" type="button" aria-label="Fermer"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6L6 18" stroke-linecap="round"/></svg></button></div>
+    <form id="settingsForm">
+      <div class="settings-group"><span class="settings-label">Préférences d'affichage</span><label class="setting-row"><span><strong>Vue tableau par défaut</strong><small>Afficher le stock sous forme de tableau à l'ouverture.</small></span><input type="checkbox" id="tableViewSetting"></label></div>
+      <div class="settings-group"><span class="settings-label">Notifications</span><label class="setting-row"><span><strong>Alertes de stock</strong><small>Conserver les alertes visibles dans le tableau de bord.</small></span><input type="checkbox" id="stockAlertsSetting" checked></label></div>
+      <div class="settings-group"><span class="settings-label">Données</span><p class="settings-note">Les préférences sont enregistrées localement sur cet appareil.</p></div>
+      <button type="submit" class="btn btn-primary btn-block">Enregistrer les paramètres</button>
+    </form>
+  </div>
+</div>
+
+<!-- ============ CHATBOT ============ -->
+<button class="chat-fab" id="chatFab" aria-label="Ouvrir l'assistant YakiStock">
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.5 8.5 0 01-8.5 8.5 8.4 8.4 0 01-3.8-.88L3 21l1.9-5.1A8.4 8.4 0 013.5 11.5 8.5 8.5 0 0112 3a8.5 8.5 0 019 8.5z" stroke-linejoin="round"/></svg>
+</button>
+
+<div class="chat-panel" id="chatPanel" hidden>
+  <div class="chat-head">
+    <div>
+      <h3>YakiStock Assistant</h3>
+      <span class="chat-status">En ligne</span>
+    </div>
+    <button class="icon-btn" id="closeChatBtn" aria-label="Fermer l'assistant">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6L6 18" stroke-linecap="round"/></svg>
+    </button>
+  </div>
+  <div class="chat-messages" id="chatMessages"></div>
+  <form class="chat-input-row" id="chatForm">
+    <input type="text" id="chatInput" placeholder="Écrire un message…" autocomplete="off">
+    <button type="submit" class="icon-btn icon-btn-accent" aria-label="Envoyer">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z" stroke-linejoin="round"/></svg>
+    </button>
+  </form>
+</div>
+
+<div class="toast-host" id="toastHost"></div>
+
+<script src="app.js"></script>
+</div>
+</body>
+</html>
+
