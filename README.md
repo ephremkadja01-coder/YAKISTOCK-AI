@@ -198,8 +198,4 @@ Before production use, the application will need server-side authentication, sec
 
 ## License
 
-<<<<<<< HEAD
 Licence MIT
-=======
-No specific license has been defined yet.
->>>>>>> 3243e19 (feat: initial commit - YakiStock core setup and SQL schema)
