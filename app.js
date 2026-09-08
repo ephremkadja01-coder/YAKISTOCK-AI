@@ -9,6 +9,9 @@ const SESSION_KEY = 'yakistock_session_v1';
 const REGISTERS_KEY = 'yakistock_registers_v1';
 const SALES_KEY = 'yakistock_sales_v1';
 const SETTINGS_KEY = 'yakistock_settings_v1';
+const API_BASE = localStorage.getItem('yakistock_api_url') || 'http://127.0.0.1:8000';
+const API_TOKEN_KEY = 'yakistock_access_token';
+const API_USER_KEY = 'yakistock_api_user';
 
 const ROLE_LABELS = { admin: 'Administrateur général', manager: 'Gestionnaire de stock', cashier: 'Opérateur des ventes' };
 
@@ -33,8 +36,9 @@ function readUsers() {
   return users;
 }
 
-function setAuthenticated(email) {
+function setAuthenticated(email, user) {
   localStorage.setItem(SESSION_KEY, email);
+  localStorage.setItem(API_USER_KEY, JSON.stringify(user));
   document.getElementById('authShell').hidden = true;
   document.getElementById('homeShell').hidden = true;
   document.getElementById('appShell').hidden = false;
@@ -67,29 +71,45 @@ document.querySelectorAll('.auth-tab').forEach(btn => btn.addEventListener('clic
 document.querySelectorAll('.js-show-login').forEach(btn => btn.addEventListener('click', () => showAuth('login')));
 document.querySelectorAll('.js-show-register').forEach(btn => btn.addEventListener('click', () => showAuth('register')));
 document.querySelector('.home-brand').addEventListener('click', (e) => { e.preventDefault(); showHome(); });
-document.getElementById('loginForm').addEventListener('submit', (e) => {
+async function apiRequest(path, options = {}) {
+  const headers = { 'Content-Type': 'application/json', ...(options.headers || {}) };
+  const token = localStorage.getItem(API_TOKEN_KEY);
+  if (token) headers.Authorization = `Bearer ${token}`;
+  const response = await fetch(`${API_BASE}${path}`, { ...options, headers });
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) throw new Error(data.detail || 'Erreur du serveur');
+  return data;
+}
+
+document.getElementById('loginForm').addEventListener('submit', async (e) => {
   e.preventDefault();
   const email = document.getElementById('loginEmail').value.trim().toLowerCase();
   const password = document.getElementById('loginPassword').value;
-  const user = readUsers().find(item => item.email === email && item.password === password);
-  if (!user) { showToast('E-mail ou mot de passe incorrect.', 'danger'); return; }
-  setAuthenticated(email);
-  showToast('Connexion réussie.', 'success');
+  try {
+    const result = await apiRequest('/login', { method: 'POST', body: JSON.stringify({ email, password }) });
+    localStorage.setItem(API_TOKEN_KEY, result.access_token);
+    setAuthenticated(email, result.user);
+    await connectBackend();
+    showToast('Connexion réussie.', 'success');
+  } catch (error) { showToast(error.message, 'danger'); }
 });
-document.getElementById('registerForm').addEventListener('submit', (e) => {
+document.getElementById('registerForm').addEventListener('submit', async (e) => {
   e.preventDefault();
   const name = document.getElementById('registerName').value.trim();
   const email = document.getElementById('registerEmail').value.trim().toLowerCase();
   const password = document.getElementById('registerPassword').value;
-  const users = readUsers();
-  if (users.some(item => item.email === email)) { showToast('Cette adresse e-mail est déjà utilisée.', 'danger'); return; }
-  users.push({ name, email, password, role: users.length === 0 ? 'admin' : 'manager', registerId: null });
-  saveCollection(USERS_KEY, users);
-  setAuthenticated(email);
-  showToast('Votre espace a été créé.', 'success');
+  try {
+    const result = await apiRequest('/register', { method: 'POST', body: JSON.stringify({ name, email, password }) });
+    localStorage.setItem(API_TOKEN_KEY, result.access_token);
+    setAuthenticated(email, result.user);
+    await connectBackend();
+    showToast('Votre espace a été créé.', 'success');
+  } catch (error) { showToast(error.message, 'danger'); }
 });
 
 function currentUser() {
+  const apiUser = readCollection(API_USER_KEY, null);
+  if (apiUser) return apiUser;
   const email = localStorage.getItem(SESSION_KEY);
   return readUsers().find(user => user.email === email);
 }
@@ -197,17 +217,30 @@ document.getElementById('settingsForm').addEventListener('submit', (e) => {
 
 let cart = [];
 let paymentType = 'cash';
+let backendRegisters = [];
+let backendUsers = [];
+let backendSales = [];
 
-function loadRegisters() { const registers = readCollection(REGISTERS_KEY, []); return Array.isArray(registers) ? registers.filter(register => register && typeof register === 'object') : []; }
-function loadSales() { const sales = readCollection(SALES_KEY, []); return Array.isArray(sales) ? sales.filter(sale => sale && typeof sale === 'object' && Array.isArray(sale.items)) : []; }
+function loadRegisters() { return backendRegisters.length ? backendRegisters : readCollection(REGISTERS_KEY, []); }
+function loadSales() { return backendSales.length ? backendSales : readCollection(SALES_KEY, []); }
+function loadAdminUsers() { return backendUsers.length ? backendUsers : readUsers(); }
 function roleName(role) { return ROLE_LABELS[role] || role; }
 function todayIso() { return new Date().toISOString().slice(0, 10); }
 
-function renderAdmin() {
+async function renderAdmin() {
+  try {
+    [backendUsers, backendRegisters, backendSales] = await Promise.all([
+      apiRequest('/users'),
+      apiRequest('/sales-spaces'),
+      apiRequest('/sales')
+    ]);
+  } catch (error) {
+    showToast(error.message, 'danger');
+  }
   const user = currentUser();
   const isAdmin = user && user.role === 'admin';
   const registers = loadRegisters();
-  const users = readUsers();
+  const users = loadAdminUsers();
   const sales = loadSales();
   document.getElementById('panel-admin').hidden = !user || (user.role !== 'admin' && user.role !== 'manager');
   document.getElementById('adminUserCard').hidden = !isAdmin;
@@ -227,47 +260,68 @@ function renderAdmin() {
   cashierFilter.innerHTML = '<option value="all">Tous les opérateurs</option>' + users.filter(item => item.role === 'cashier').map(item => `<option value="${escapeHtml(item.email)}">${escapeHtml(item.name)}</option>`).join('');
   registerFilter.value = previousRegister; cashierFilter.value = previousCashier;
   renderSalesLog();
-  document.querySelectorAll('.js-delete-register').forEach(button => button.addEventListener('click', () => { saveCollection(REGISTERS_KEY, registers.filter(register => register.id !== button.dataset.id)); renderAdmin(); showToast('Espace supprimé.', 'success'); }));
-  document.querySelectorAll('.js-delete-user').forEach(button => button.addEventListener('click', () => { saveCollection(USERS_KEY, readUsers().filter(item => item.email !== button.dataset.email)); renderAdmin(); showToast('Utilisateur supprimé.', 'success'); }));
-  document.querySelectorAll('.js-edit-user').forEach(button => button.addEventListener('click', () => { const item = readUsers().find(user => user.email === button.dataset.email); if (!item) return; document.getElementById('adminUserName').value = item.name; document.getElementById('adminUserEmail').value = item.email; document.getElementById('adminUserPassword').value = ''; document.getElementById('adminUserPassword').required = false; document.getElementById('adminUserRole').value = item.role; document.getElementById('adminUserForm').dataset.editEmail = item.email; document.getElementById('adminUserSubmit').textContent = 'Enregistrer le compte'; document.getElementById('adminUserName').focus(); }));
-  document.querySelectorAll('.js-assign-register').forEach(select => select.addEventListener('change', () => { const nextUsers = readUsers(); const assigned = nextUsers.find(item => item.email === select.dataset.email); if (assigned) assigned.registerId = select.value || null; saveCollection(USERS_KEY, nextUsers); showToast('Affectation mise à jour.', 'success'); }));
+  document.querySelectorAll('.js-delete-register').forEach(button => button.addEventListener('click', async () => { try { await apiRequest(`/sales-spaces/${button.dataset.id}`, { method: 'DELETE' }); await renderAdmin(); showToast('Espace supprimé.', 'success'); } catch (error) { showToast(error.message, 'danger'); } }));
+  document.querySelectorAll('.js-delete-user').forEach(button => button.addEventListener('click', async () => { const item = users.find(entry => entry.email === button.dataset.email); if (!item) return; try { await apiRequest(`/users/${item.id}`, { method: 'DELETE' }); await renderAdmin(); showToast('Utilisateur supprimé.', 'success'); } catch (error) { showToast(error.message, 'danger'); } }));
+  document.querySelectorAll('.js-edit-user').forEach(button => button.addEventListener('click', () => { const item = users.find(entry => entry.email === button.dataset.email); if (!item) return; document.getElementById('adminUserName').value = item.name; document.getElementById('adminUserEmail').value = item.email; document.getElementById('adminUserPassword').value = ''; document.getElementById('adminUserPassword').required = false; document.getElementById('adminUserRole').value = item.role; document.getElementById('adminUserForm').dataset.editId = item.id; document.getElementById('adminUserForm').dataset.editEmail = item.email; document.getElementById('adminUserSubmit').textContent = 'Enregistrer le compte'; document.getElementById('adminUserName').focus(); }));
+  document.querySelectorAll('.js-assign-register').forEach(select => select.addEventListener('change', async () => { const item = users.find(entry => entry.email === select.dataset.email); if (!item) return; try { await apiRequest(`/users/${item.id}`, { method: 'PATCH', body: JSON.stringify({ sales_space_id: select.value ? Number(select.value) : null }) }); await renderAdmin(); showToast('Affectation mise à jour.', 'success'); } catch (error) { showToast(error.message, 'danger'); } }));
 }
 
 function renderSalesLog() {
   const registerId = document.getElementById('saleRegisterFilter').value;
   const cashierEmail = document.getElementById('saleCashierFilter').value;
   const registers = loadRegisters();
-  const users = readUsers();
-  const sales = loadSales().filter(sale => (registerId === 'all' || sale.registerId === registerId) && (cashierEmail === 'all' || sale.cashierEmail === cashierEmail));
-  document.getElementById('salesLog').innerHTML = sales.length ? sales.slice().reverse().map(sale => `<li class="sale-log-item"><strong>${formatDate(sale.date)}</strong><span>${escapeHtml(users.find(user => user.email === sale.cashierEmail)?.name || sale.cashierEmail)}</span><span>${escapeHtml(registers.find(register => register.id === sale.registerId)?.name || 'Espace supprimé')}</span><b>${fmtFCFA(sale.total)}</b></li>`).join('') : '<li class="empty-inline">Aucune commande enregistrée.</li>';
+  const users = loadAdminUsers();
+  const sales = loadSales().filter(sale => (registerId === 'all' || String(sale.sales_space_id ?? sale.registerId) === registerId) && (cashierEmail === 'all' || String(sale.cashier_id ?? sale.cashierEmail) === cashierEmail));
+  document.getElementById('salesLog').innerHTML = sales.length ? sales.slice().reverse().map(sale => `<li class="sale-log-item"><strong>${formatDate(sale.sale_date || sale.date)}</strong><span>${escapeHtml(sale.cashier_name || users.find(user => user.email === sale.cashierEmail)?.name || sale.cashierEmail || '')}</span><span>${escapeHtml(sale.sales_space_name || registers.find(register => String(register.id) === String(sale.registerId))?.name || 'Espace supprimé')}</span><b>${fmtFCFA(Number(sale.total_amount ?? sale.total ?? 0))}</b></li>`).join('') : '<li class="empty-inline">Aucune commande enregistrée.</li>';
 }
 
-document.getElementById('adminUserForm').addEventListener('submit', (e) => {
+document.getElementById('adminUserForm').addEventListener('submit', async (e) => {
   e.preventDefault();
-  const users = readUsers();
   const email = document.getElementById('adminUserEmail').value.trim().toLowerCase();
   const editEmail = e.target.dataset.editEmail;
+  const editId = e.target.dataset.editId;
   const name = document.getElementById('adminUserName').value.trim();
   const password = document.getElementById('adminUserPassword').value;
-  if (users.some(user => user.email === email && user.email !== editEmail)) { showToast('Cette adresse e-mail est déjà utilisée.', 'danger'); return; }
-  if (editEmail) { const item = users.find(user => user.email === editEmail); item.name = name; item.email = email; item.role = document.getElementById('adminUserRole').value; if (password) item.password = password; if (item.role !== 'cashier') item.registerId = null; delete e.target.dataset.editEmail; document.getElementById('adminUserSubmit').textContent = 'Créer le compte'; document.getElementById('adminUserPassword').required = true; }
-  else users.push({ name, email, password, role: document.getElementById('adminUserRole').value, registerId: null });
-  saveCollection(USERS_KEY, users); e.target.reset(); renderAdmin(); showToast(editEmail ? 'Compte mis à jour.' : 'Compte créé.', 'success');
+  const role = document.getElementById('adminUserRole').value;
+  try {
+    if (editId) {
+      const update = { name, email, role };
+      if (password) update.password = password;
+      await apiRequest(`/users/${editId}`, { method: 'PATCH', body: JSON.stringify(update) });
+    } else {
+      const result = await apiRequest('/register', { method: 'POST', body: JSON.stringify({ name, email, password }) });
+      if (role !== 'manager') await apiRequest(`/users/${result.user.id}`, { method: 'PATCH', body: JSON.stringify({ role }) });
+    }
+    delete e.target.dataset.editId;
+    delete e.target.dataset.editEmail;
+    e.target.reset();
+    document.getElementById('adminUserPassword').required = true;
+    document.getElementById('adminUserSubmit').textContent = 'Créer le compte';
+    await renderAdmin();
+    showToast(editEmail ? 'Compte mis à jour.' : 'Compte créé.', 'success');
+  } catch (error) { showToast(error.message, 'danger'); }
 });
-document.getElementById('cashRegisterForm').addEventListener('submit', (e) => {
+document.getElementById('cashRegisterForm').addEventListener('submit', async (e) => {
   e.preventDefault();
-  const registers = loadRegisters();
-  registers.push({ id: 'r' + Date.now(), name: document.getElementById('registerName').value.trim(), active: true });
-  saveCollection(REGISTERS_KEY, registers); e.target.reset(); renderAdmin(); showToast('Espace créé.', 'success');
+  try {
+    await apiRequest('/sales-spaces', { method: 'POST', body: JSON.stringify({ name: document.getElementById('registerName').value.trim() }) });
+    e.target.reset();
+    await renderAdmin();
+    showToast('Espace créé.', 'success');
+  } catch (error) { showToast(error.message, 'danger'); }
 });
 document.getElementById('saleRegisterFilter').addEventListener('change', renderSalesLog);
 document.getElementById('saleCashierFilter').addEventListener('change', renderSalesLog);
 
-function renderCashier() {
+async function renderCashier() {
   const user = currentUser();
-  const register = loadRegisters().find(item => item.id === user.registerId);
+  try {
+    backendRegisters = await apiRequest('/sales-spaces');
+    backendSales = await apiRequest('/sales');
+  } catch (error) { showToast(error.message, 'danger'); }
+  const register = loadRegisters().find(item => String(item.id) === String(user.sales_space_id ?? user.registerId));
   document.getElementById('cashierRegisterTitle').textContent = register ? register.name : 'Aucun espace affecté';
-  const todaySales = loadSales().filter(sale => sale.cashierEmail === user.email && sale.date === todayIso());
+  const todaySales = loadSales().filter(sale => (sale.cashier_id === user.id || sale.cashierEmail === user.email) && (sale.sale_date || sale.date) === todayIso());
   document.getElementById('cashierSalesCount').textContent = todaySales.length;
   document.getElementById('cashierProducts').innerHTML = state.products.map(product => `<button class="cashier-product" type="button" data-product-id="${product.id}"><span><strong class="cashier-product-name">${escapeHtml(product.name)}</strong><small class="cashier-product-stock">${product.stock} ${escapeHtml(product.unit)} disponibles</small></span><b class="cashier-product-price">${fmtFCFA(product.price)}</b></button>`).join('') || '<div class="empty-state"><p class="empty-title">Aucun produit disponible</p></div>';
   document.querySelectorAll('.cashier-product').forEach(button => button.addEventListener('click', () => addToCart(button.dataset.productId)));
@@ -277,11 +331,28 @@ function renderCashier() {
 function addToCart(productId) { const product = productById(productId); if (!product || product.stock < 1) return; const item = cart.find(line => line.productId === productId); if (item && item.qty >= product.stock) return; if (item) item.qty += 1; else cart.push({ productId, qty: 1 }); renderCart(); }
 function renderCart() { const lines = cart.map(line => ({ ...line, product: productById(line.productId) })).filter(line => line.product); const total = lines.reduce((sum, line) => sum + line.qty * line.product.price, 0); document.getElementById('cartCount').textContent = `${lines.reduce((sum, line) => sum + line.qty, 0)} article(s)`; document.getElementById('cartTotal').textContent = fmtFCFA(total); document.getElementById('cartList').innerHTML = lines.length ? lines.map(line => `<li class="cart-item"><span class="cart-item-name">${escapeHtml(line.product.name)}</span><span class="cart-item-qty">x${line.qty}</span><button class="cart-remove" type="button" data-product-id="${line.product.id}" aria-label="Retirer ${escapeHtml(line.product.name)}">×</button></li>`).join('') : '<li class="empty-inline">Le panier est vide.</li>'; document.querySelectorAll('.cart-remove').forEach(button => button.addEventListener('click', () => { cart = cart.filter(line => line.productId !== button.dataset.productId); renderCart(); })); document.getElementById('checkoutBtn').disabled = !lines.length; }
 document.querySelectorAll('.payment-btn').forEach(button => button.addEventListener('click', () => { paymentType = button.dataset.payment; document.querySelectorAll('.payment-btn').forEach(item => item.classList.toggle('is-active', item === button)); }));
-function printReceipt(sale, register, user, lines) { const receipt = window.open('', '_blank', 'width=420,height=640'); if (!receipt) return; receipt.document.write(`<html><head><title>Ticket YakiStock</title><style>body{font:14px Arial;padding:24px;color:#111}h1{font-size:20px}p{margin:7px 0}.line{display:flex;justify-content:space-between;border-bottom:1px solid #ddd;padding:8px 0}.total{font-size:18px;font-weight:bold;margin-top:16px}</style></head><body><h1>YakiStock</h1><p>${escapeHtml(register.name)}</p><p>${formatDate(sale.date)} | ${escapeHtml(user.name)}</p>${lines.map(line => `<div class="line"><span>${escapeHtml(line.product.name)} x${line.qty}</span><span>${fmtFCFA(line.qty * line.product.price)}</span></div>`).join('')}<p class="total">Total : ${fmtFCFA(sale.total)}</p><p>Paiement : ${sale.payment === 'mobile' ? 'Mobile Money' : 'Espèces'}</p><script>window.onload=function(){window.print();window.close();}</script></body></html>`); receipt.document.close(); }
-document.getElementById('checkoutBtn').addEventListener('click', () => { const user = currentUser(); const register = loadRegisters().find(item => item.id === user.registerId); if (!register) { showToast('Aucun espace ne vous est affecté.', 'danger'); return; } const lines = cart.map(line => ({ ...line, product: productById(line.productId) })); if (lines.some(line => line.qty > line.product.stock)) { showToast('Stock insuffisant pour cette commande.', 'danger'); return; } const total = lines.reduce((sum, line) => sum + line.qty * line.product.price, 0); lines.forEach(line => { line.product.stock -= line.qty; }); const sale = { id: 's' + Date.now(), date: todayIso(), cashierEmail: user.email, registerId: register.id, payment: paymentType, total, items: lines.map(line => ({ productId: line.product.id, qty: line.qty, price: line.product.price, purchasePrice: line.product.purchasePrice || 0 })) }; saveCollection(SALES_KEY, [...loadSales(), sale]); state.movements.unshift({ id: 'm' + Date.now(), productId: lines[0].product.id, type: 'out', qty: lines.reduce((sum, line) => sum + line.qty, 0), date: todayIso(), note: `Commande ${paymentType === 'mobile' ? 'Mobile Money' : 'espèces'} - ${register.name}` }); saveState(); cart = []; renderCashier(); showToast('Commande validée. Ticket prêt à imprimer.', 'success'); printReceipt(sale, register, user, lines); });
+function printReceipt(sale, register, user, lines) { const receipt = window.open('', '_blank', 'width=420,height=640'); if (!receipt) return; receipt.document.write(`<html><head><title>Ticket YakiStock</title><style>body{font:14px Arial;padding:24px;color:#111}h1{font-size:20px}p{margin:7px 0}.line{display:flex;justify-content:space-between;border-bottom:1px solid #ddd;padding:8px 0}.total{font-size:18px;font-weight:bold;margin-top:16px}</style></head><body><h1>YakiStock</h1><p>${escapeHtml(register.name)}</p><p>${formatDate(sale.date)} | ${escapeHtml(user.name)}</p>${lines.map(line => `<div class="line"><span>${escapeHtml(line.product.name)} x${line.qty}</span><span>${fmtFCFA(line.qty * line.product.price)}</span></div>`).join('')}<p class="total">Total : ${fmtFCFA(sale.total)}</p><script>window.onload=function(){window.print();window.close();}</script></body></html>`); receipt.document.close(); }
+document.getElementById('checkoutBtn').addEventListener('click', async () => {
+  const user = currentUser();
+  const register = loadRegisters().find(item => String(item.id) === String(user.sales_space_id ?? user.registerId));
+  if (!register) { showToast('Aucun espace ne vous est affecté.', 'danger'); return; }
+  const lines = cart.map(line => ({ ...line, product: productById(line.productId) }));
+  if (lines.some(line => line.qty > line.product.stock)) { showToast('Stock insuffisant pour cette commande.', 'danger'); return; }
+  try {
+    const result = await apiRequest('/sales', { method: 'POST', body: JSON.stringify({ sales_space_id: Number(register.id), items: lines.map(line => ({ product_id: Number(line.product.id), quantity: line.qty })) }) });
+    const sale = { date: todayIso(), total: result.total_amount };
+    await connectBackend();
+    cart = [];
+    await renderCashier();
+    showToast('Commande validée. Ticket prêt à imprimer.', 'success');
+    printReceipt(sale, register, user, lines);
+  } catch (error) { showToast(error.message, 'danger'); }
+});
 
 document.getElementById('logoutBtn').addEventListener('click', () => {
   localStorage.removeItem(SESSION_KEY);
+  localStorage.removeItem(API_TOKEN_KEY);
+  localStorage.removeItem(API_USER_KEY);
   document.getElementById('appShell').hidden = true;
   document.getElementById('authShell').hidden = false;
   document.getElementById('loginForm').reset();
@@ -289,7 +360,7 @@ document.getElementById('logoutBtn').addEventListener('click', () => {
 });
 
 const storedSession = localStorage.getItem(SESSION_KEY);
-const validSession = storedSession && readUsers().some(user => user.email === storedSession) ? storedSession : null;
+const validSession = storedSession && localStorage.getItem(API_TOKEN_KEY) && localStorage.getItem(API_USER_KEY) ? storedSession : null;
 if (!validSession) localStorage.removeItem(SESSION_KEY);
 document.getElementById('authShell').hidden = true;
 document.getElementById('appShell').hidden = !validSession;
@@ -307,39 +378,57 @@ function loadState() {
 }
 
 let state = loadState();
-const API_BASE = localStorage.getItem('yakistock_api_url') || 'http://127.0.0.1:8000/api';
 let apiAvailable = false;
 
 function saveState() {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-  syncBackend();
 }
 
-async function syncBackend() {
-  if (!apiAvailable) return;
-  try {
-    await fetch(`${API_BASE}/sync`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ products: state.products, movements: state.movements }) });
-  } catch (error) { apiAvailable = false; }
+function normalizeProduct(product) {
+  return {
+    ...product,
+    id: String(product.id),
+    category: product.category || 'General',
+    purchasePrice: Number(product.purchasePrice ?? product.purchase_price ?? 0),
+    stock: Number(product.stock ?? product.quantity ?? 0),
+    min: Number(product.min ?? product.minimum_quantity ?? 0),
+    max: Number(product.max ?? product.maximum_quantity ?? 1),
+    unit: product.unit || 'unit'
+  };
+}
+
+function normalizeMovement(movement) {
+  return {
+    ...movement,
+    id: String(movement.id),
+    productId: String(movement.productId ?? movement.product_id),
+    type: movement.type || movement.movement_type,
+    qty: Number(movement.qty ?? movement.quantity),
+    date: movement.date || movement.movement_date,
+    note: movement.note || ''
+  };
 }
 
 async function connectBackend() {
   try {
-    const health = await fetch(`${API_BASE}/health`);
-    if (!health.ok) return;
+    if (!localStorage.getItem(API_TOKEN_KEY)) return;
+    const [remoteUser, remoteProducts, remoteMovements] = await Promise.all([apiRequest('/me'), apiRequest('/products'), apiRequest('/movements')]);
+    localStorage.setItem(API_USER_KEY, JSON.stringify(remoteUser));
+    state.products = remoteProducts.map(normalizeProduct);
+    state.movements = remoteMovements.map(normalizeMovement);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
     apiAvailable = true;
-    const [productsResponse, movementsResponse] = await Promise.all([fetch(`${API_BASE}/products`), fetch(`${API_BASE}/movements`)]);
-    const remoteProducts = await productsResponse.json();
-    const remoteMovements = await movementsResponse.json();
-    if (remoteProducts.data.length || remoteMovements.data.length) {
-      state.products = remoteProducts.data;
-      state.movements = remoteMovements.data;
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-      renderAll();
-    } else {
-      await syncBackend();
-    }
+    renderAll();
     updateNetStatus();
-  } catch (error) { apiAvailable = false; }
+  } catch (error) {
+    apiAvailable = false;
+    if (error.message === 'Jeton invalide' || error.message === 'Utilisateur introuvable') {
+      localStorage.removeItem(API_TOKEN_KEY);
+      localStorage.removeItem(API_USER_KEY);
+      localStorage.removeItem(SESSION_KEY);
+      showAuth('login');
+    }
+  }
 }
 
 function fmtFCFA(n) {
@@ -542,12 +631,15 @@ function productRow(p) {
   `;
 }
 
-function deleteProduct(id) {
-  state.products = state.products.filter(p => p.id !== id);
-  state.movements = state.movements.filter(m => m.productId !== id);
-  saveState();
-  renderAll();
-  showToast('Produit retiré du stock.', 'success');
+async function deleteProduct(id) {
+  try {
+    await apiRequest(`/products/${id}`, { method: 'DELETE' });
+    state.products = state.products.filter(p => p.id !== id);
+    state.movements = state.movements.filter(m => m.productId !== id);
+    saveState();
+    renderAll();
+    showToast('Produit retiré du stock.', 'success');
+  } catch (error) { showToast(error.message, 'danger'); }
 }
 
 document.getElementById('searchInput').addEventListener('input', renderStock);
@@ -581,7 +673,7 @@ document.getElementById('emptyStateAddBtn').addEventListener('click', openProduc
 document.getElementById('closeProductModal').addEventListener('click', () => { productModalOverlay.hidden = true; });
 productModalOverlay.addEventListener('click', (e) => { if (e.target === productModalOverlay) productModalOverlay.hidden = true; });
 
-document.getElementById('productForm').addEventListener('submit', (e) => {
+document.getElementById('productForm').addEventListener('submit', async (e) => {
   e.preventDefault();
   const name = document.getElementById('pName').value.trim();
   const category = document.getElementById('pCategory').value.trim();
@@ -595,12 +687,23 @@ document.getElementById('productForm').addEventListener('submit', (e) => {
   if (!name || !category || !unit || !Number.isFinite(price) || !Number.isFinite(purchasePrice) || !Number.isFinite(stock) || !Number.isFinite(min) || !Number.isFinite(max) || price < 0 || purchasePrice < 0 || stock < 0 || min < 0 || max <= 0) return;
 
   const editId = e.target.dataset.editId;
-  if (editId) { Object.assign(productById(editId), { name, category, price, purchasePrice, stock, min, max, unit }); delete e.target.dataset.editId; document.getElementById('productModalTitle').textContent = 'Nouveau produit'; document.querySelector('#productForm button[type="submit"]').textContent = 'Ajouter au stock'; }
-  else { const id = 'p' + Date.now(); state.products.push({ id, name, category, price, purchasePrice, stock, min, max, unit }); }
-  saveState();
-  productModalOverlay.hidden = true;
-  renderAll();
-  showToast('Produit ajouté au stock.', 'success');
+  try {
+    const payload = { name, description: '', category, price, quantity: stock };
+    if (editId) {
+      await apiRequest(`/products/${editId}`, { method: 'PUT', body: JSON.stringify(payload) });
+      Object.assign(productById(editId), { name, category, price, purchasePrice, stock, min, max, unit });
+      delete e.target.dataset.editId;
+      document.getElementById('productModalTitle').textContent = 'Nouveau produit';
+      document.querySelector('#productForm button[type="submit"]').textContent = 'Ajouter au stock';
+    } else {
+      const result = await apiRequest('/products', { method: 'POST', body: JSON.stringify(payload) });
+      state.products.push(normalizeProduct({ id: result.id, name, category, price, purchasePrice, stock, min, max, unit }));
+    }
+    saveState();
+    productModalOverlay.hidden = true;
+    renderAll();
+    showToast(editId ? 'Produit mis à jour.' : 'Produit ajouté au stock.', 'success');
+  } catch (error) { showToast(error.message, 'danger'); }
 });
 
 /* ===========================================================
@@ -631,7 +734,7 @@ document.querySelectorAll('.segmented-btn').forEach(btn => {
 
 document.getElementById('movDate').valueAsDate = new Date();
 
-document.getElementById('movementForm').addEventListener('submit', (e) => {
+document.getElementById('movementForm').addEventListener('submit', async (e) => {
   e.preventDefault();
   const productId = document.getElementById('movProduct').value;
   const qty = Number(document.getElementById('movQty').value);
@@ -645,14 +748,19 @@ document.getElementById('movementForm').addEventListener('submit', (e) => {
     return;
   }
 
-  product.stock += movementType === 'in' ? qty : -qty;
-  state.movements.unshift({ id: 'm' + Date.now(), productId, type: movementType, qty, date, note });
-  saveState();
-
-  e.target.reset();
-  document.getElementById('movDate').valueAsDate = new Date();
-  renderAll();
-  showToast('Mouvement enregistré.', 'success');
+  try {
+    const result = await apiRequest('/movements', {
+      method: 'POST',
+      body: JSON.stringify({ product_id: Number(productId), movement_type: movementType, quantity: qty, movement_date: date, note })
+    });
+    product.stock = result.quantity;
+    state.movements.unshift(normalizeMovement({ id: result.id, product_id: productId, movement_type: movementType, quantity: qty, movement_date: date, note }));
+    saveState();
+    e.target.reset();
+    document.getElementById('movDate').valueAsDate = new Date();
+    renderAll();
+    showToast('Mouvement enregistré.', 'success');
+  } catch (error) { showToast(error.message, 'danger'); }
 });
 
 function renderMovementsTab() {

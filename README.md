@@ -2,7 +2,7 @@
 
 YakiStock is a progressive web application (PWA) for inventory management, stock movements, and sales tracking.
 
-The current version runs entirely in the browser, without a backend or server database. Data is stored locally on the device using `localStorage`.
+The frontend runs locally in the browser and is connected to the FastAPI backend for registration, login, JWT authentication, and product CRUD. MySQL stores users and products; the remaining tables are ready for inventory, sales, and movement features.
 
 ## Features
 
@@ -39,9 +39,9 @@ The current version runs entirely in the browser, without a backend or server da
 - Web Storage API (`localStorage`)
 - Service Worker
 - Web App Manifest
+- FastAPI
+- MySQL
 - No mandatory npm dependencies
-- No backend included
-- No SQL database included
 
 ## Project Structure
 
@@ -52,6 +52,10 @@ YAKISTOCK/
 ├── style.css              # Styles and responsive design
 ├── manifest.json          # PWA configuration
 ├── sw.js                  # Cache and offline support
+├── main.py                # FastAPI backend
+├── schema.sql             # MySQL database schema
+├── requirements.txt       # Python dependencies
+├── .env.example           # Database and JWT configuration template
 ├── README.md              # Project documentation
 └── icons/                 # Application logos and images
 ```
@@ -67,7 +71,7 @@ No dependency installation is required.
 
 For the Service Worker and PWA installation to work correctly, using a local server is recommended instead of opening the file directly with `file://`.
 
-## Running with VS Code
+## Running the Frontend with VS Code
 
 Using the **Live Server** extension:
 
@@ -86,6 +90,97 @@ Then open:
 ```text
 http://127.0.0.1:5500
 ```
+
+## Setting Up MySQL
+
+Install MySQL Server, then create the database and all tables by running `schema.sql` in MySQL Workbench or the MySQL client:
+
+```sql
+SOURCE schema.sql;
+```
+
+Copy `.env.example` to `.env` and set the MySQL password and a long random JWT secret:
+
+```text
+MYSQL_HOST=localhost
+MYSQL_PORT=3306
+MYSQL_USER=root
+MYSQL_PASSWORD=your_password
+MYSQL_DATABASE=yakistock_db
+JWT_SECRET_KEY=replace_with_a_long_random_secret
+JWT_EXPIRE_MINUTES=60
+CORS_ORIGINS=http://127.0.0.1:5500,http://localhost:5500
+```
+
+Install the backend dependencies:
+
+```powershell
+py -m pip install -r requirements.txt
+```
+
+Start the API from the project folder:
+
+```powershell
+py -m uvicorn main:app --reload --host 127.0.0.1 --port 8000
+```
+
+The API requires the dependencies listed in `requirements.txt`, including JWT and password hashing packages.
+
+### Authentication Endpoints
+
+Register a user:
+
+```http
+POST /register
+Content-Type: application/json
+
+{
+  "email": "owner@example.com",
+  "password": "a-strong-password"
+}
+```
+
+Log in and receive a JWT:
+
+```http
+POST /login
+Content-Type: application/json
+
+{
+  "email": "owner@example.com",
+  "password": "a-strong-password"
+}
+```
+
+Use the returned token for protected requests:
+
+```http
+Authorization: Bearer <access_token>
+```
+
+### Product Endpoints
+
+The current product endpoints are:
+
+- `GET /products`
+- `POST /products`
+- `PUT /products/{product_id}`
+- `DELETE /products/{product_id}`
+- `GET /movements`
+- `POST /movements`
+- `GET /sales-spaces`
+- `POST /sales-spaces`
+- `DELETE /sales-spaces/{space_id}`
+- `GET /users`
+- `PATCH /users/{user_id}`
+- `GET /sales`
+- `POST /sales`
+- `POST /chat`
+- `GET /ml/dataset`
+
+Every product is associated with its creator through `user_id`. Authenticated users can only list, update, or delete their own products.
+
+The chatbot uses the authenticated user's products and stores each question and answer in `chat_messages`. Stock movements and sales automatically create training observations in `ml_observations`. The `/ml/dataset` endpoint exports these observations for a future demand-prediction model; no ML model is trained automatically yet.
 
 ## Usage
 
@@ -129,7 +224,7 @@ The sales operator can:
 
 ## Data Storage
 
-Data is stored locally in the browser. The main storage keys are:
+The frontend currently stores its local state in the browser. The main storage keys are:
 
 - `yakistock_state_v1`: products and stock movements
 - `yakistock_users_v1`: user accounts
@@ -140,10 +235,23 @@ Data is stored locally in the browser. The main storage keys are:
 
 Data belongs to the browser and device being used. It is not automatically shared between devices.
 
+The MySQL schema in `schema.sql` provides these relational tables:
+
+- `users`
+- `sales_spaces`
+- `products`
+- `stock_movements`
+- `sales`
+- `sale_items`
+- `user_settings`
+
+The `users` table stores `id`, `email`, `password_hash`, role information, and timestamps. The `products` table includes `id`, `user_id`, `name`, `description`, `price`, `quantity`, and `created_at`, along with the existing stock-management fields.
+
 ## Current Limitations
 
-- No backend is included in this version.
-- No SQL database is used.
+- The frontend is currently connected to authentication and product CRUD.
+- Movements and the chatbot are connected to the API.
+- Sales spaces, user administration, and sales checkout still need their final frontend wiring.
 - Passwords are stored locally and must not be considered secure for production use.
 - Data may be lost if browser storage is cleared.
 - Cross-device synchronization is not available yet.
@@ -151,7 +259,7 @@ Data belongs to the browser and device being used. It is not automatically share
 - Predictions are local estimates based on stock movement history.
 - The assistant is local and does not use a remote NLP model.
 
-## Future Backend Preparation
+## Future Backend Work
 
 A future backend may provide:
 
